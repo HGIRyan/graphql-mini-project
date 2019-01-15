@@ -4,7 +4,7 @@ import axios from 'axios'
 import { baseUrl } from './config'
 
 class App extends Component {
-  constructor(props){
+  constructor(props) {
     super(props)
     this.state = {
       message: "",
@@ -13,7 +13,11 @@ class App extends Component {
     this.url = React.createRef();
     this.description = React.createRef()
   }
-  async componentDidMount(){
+  async componentDidMount() {
+    await this.getLinks()
+  }
+
+  async getLinks() {
     const query = `
       query {
         links {
@@ -23,25 +27,25 @@ class App extends Component {
         }
       }
     `
-    let res = await axios.post(baseUrl, {query: query})
+    let res = await axios.post(baseUrl, { query: query })
     this.setState({
       links: res.data.data.links
     })
-  }
 
-async welcome(){
-  const query = `
+  }
+  async welcome() {
+    const query = `
     query {
       welcome
     }
   `
-  let res = await axios.post(baseUrl, {query: query})
-  this.setState({
-    message: res.data.data.welcome
-  })
-} 
-async addLink(){
-  const mutation = `
+    let res = await axios.post(baseUrl, { query: query })
+    this.setState({
+      message: res.data.data.welcome
+    })
+  }
+  async addLink() {
+    const mutation = `
     mutation {
       addLink(url:"${this.url.current.value}" , description: "${this.description.current.value}") {
           id
@@ -50,27 +54,39 @@ async addLink(){
       }
     }
   `;
-  await axios.post(baseUrl, {query: mutation})
-}
+    await axios.post(baseUrl, { query: mutation })
+    this.getLinks()
+  }
+  async delete(linkId) {
+    const mutation = `
+    mutation {
+    removeLink(linkId: "${linkId}"){
+      id
+    }
+  }`;
+    await axios.post(baseUrl, { query: mutation })
+    this.getLinks();
+  }
 
   render() {
     return (
       <div className="App">
         <h1>CLONE WARS, STAR WARS</h1>
-        <button onClick={()=>{this.welcome()}}>WELCOME</button>
+        <button onClick={() => { this.welcome() }}>WELCOME</button>
         <p>{this.state.message}</p>
-        <p>URL:<input ref={this.url}/></p>
-        <p>DESCRIPTION:<input ref={this.description}/></p>
-        <button onClick={()=>{this.addLink()}}>Add New Link</button>
-        
-          {this.state.links.map(link => {
-            return (<div key ={link.id}>
-              <p>ID: {link.id}</p>
-              <p>description: {link.description}</p>
-              <p><a href={link.url}>URL</a> </p>
-            </div>)
-          })}
-        
+        <p>URL:<input ref={this.url} /></p>
+        <p>DESCRIPTION:<input ref={this.description} /></p>
+        <button onClick={() => { this.addLink() }}>Add New Link</button>
+        {this.state.links.map(link => {
+          return (<div key={link.id}>
+            <hr />
+            <p>ID: {link.id}</p>
+            <p>description: {link.description}</p>
+            <p><a href={link.url}>URL</a> </p>
+            <button onClick={() => { this.delete(link.id) }}>Delete</button>
+          </div>)
+        })}
+
       </div>
     );
   }

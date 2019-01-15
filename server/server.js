@@ -28,6 +28,7 @@ type Query {
 }
 type Mutation {
     addLink(url: String!, description: String!): Link!
+    removeLink(linkId: ID!):Link!
 }
 
 type Link {
@@ -51,13 +52,22 @@ const resolvers = {
         addLink: (root, args) => {
             idCount++
             const newLink = {
-                id:`link-${idCount}`,
+                id: `link-${idCount}`,
                 url: args.url,
                 description: args.description
             }
             articleLinks.push(newLink)
             return newLink;
-            console.log(args)
+        },
+        removeLink: (root, args) => {
+            let linkIndex = articleLinks.findIndex((link) => {
+                if (link.id === args.linkId) {
+                    return true
+                } else { return false }
+            })
+            let link = articleLinks[linkIndex];
+            articleLinks.splice(linkIndex, 1);
+            return link
         }
     }
 
